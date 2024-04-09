@@ -8,16 +8,18 @@ import { Layout } from "../components/layout/layout";
 export interface ProvidersProps {
   children: React.ReactNode;
   themeProps?: ThemeProviderProps;
+  fullScreen?: boolean;
 }
 
-export function Providers({ children, themeProps }: ProvidersProps) {
+export function Providers({ children, themeProps, fullScreen = false }: ProvidersProps) {
   console.log("children", children);
   return (
     <NextUIProvider>
       <NextThemesProvider defaultTheme="system" attribute="class" {...themeProps}>
-        <Layout>
+        {fullScreen ? <>{children}</> : <Layout>{children}</Layout>}
+        {/* <Layout>
           {children}
-        </Layout>
+        </Layout> */}
       </NextThemesProvider>
     </NextUIProvider>
   );
