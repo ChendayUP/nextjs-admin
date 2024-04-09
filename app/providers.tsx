@@ -11,6 +11,7 @@ export interface ProvidersProps {
 }
 
 export function Providers({ children, themeProps }: ProvidersProps) {
+  console.log("children", children);
   return (
     <NextUIProvider>
       <NextThemesProvider defaultTheme="system" attribute="class" {...themeProps}>
