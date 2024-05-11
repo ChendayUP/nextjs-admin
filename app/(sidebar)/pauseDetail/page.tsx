@@ -28,8 +28,17 @@ const page = () => {
     mainCompanyInfo: '分公司信息: 总部'
   }
 
-  const downloadFile = (fileUrl) => {
+  const downloadFile = (fileUrl: any) => {
     // Implement file download logic here
+    let a = document.createElement('a')
+    //ArrayBuffer 转为 Blob
+    let blob = new Blob([fileUrl], {
+      type: 'application/vnd.ms-excel'
+    })
+    let objectUrl = URL.createObjectURL(blob)
+    a.setAttribute('href', objectUrl)
+    a.setAttribute('download', '设备列表.xlsx')
+    a.click()
   }
 
   const submitAudit = () => {

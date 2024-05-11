@@ -1,7 +1,20 @@
 import React from 'react'
 import { FaCheck, FaTimes } from 'react-icons/fa'
 
-const StepProgress = ({ data }) => {
+// 申请请求类型
+interface StepProgressType {
+  status: number
+  userName: string
+  time: string
+  subCompanyInfo: string
+  mainCompanyInfo: string
+}
+
+interface StepProgressProps {
+  data: StepProgressType;
+}
+
+const StepProgress = ({ data }: StepProgressProps) => {
   return (
     <div className="mt-6">
       <div className="flex justify-between items-start px-20 h-[200px]">
