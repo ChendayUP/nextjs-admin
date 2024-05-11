@@ -70,6 +70,12 @@ export const SidebarWrapper = () => {
                 icon={<PaymentsIcon />}
                 href="configTables"
               />
+               <SidebarItem
+                isActive={pathname === "/pauseDetail"}
+                title="PauseDetail"
+                icon={<PaymentsIcon />}
+                href="pauseDetail"
+              />
               <CollapseItems
                 icon={<BalanceIcon />}
                 items={["Banks Accounts", "Credit Cards", "Loans"]}
