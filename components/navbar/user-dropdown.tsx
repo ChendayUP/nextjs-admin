@@ -11,6 +11,8 @@ import React from "react";
 import { DarkModeSwitch } from "./darkmodeswitch";
 
 export const UserDropdown = () => {
+  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+
   return (
     <Dropdown>
       <NavbarItem>
@@ -32,7 +34,7 @@ export const UserDropdown = () => {
           className="flex flex-col justify-start w-full items-start"
         >
           <p>Signed in as</p>
-          <p>zoey@example.com</p>
+          <p>{userInfo.staff.real_name}</p>
         </DropdownItem>
         <DropdownItem key="settings">My Settings</DropdownItem>
         <DropdownItem key="team_settings">Team Settings</DropdownItem>
