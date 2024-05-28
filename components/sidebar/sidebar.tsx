@@ -54,6 +54,12 @@ export const SidebarWrapper = () => {
               />
             </SidebarMenu>
             <SidebarMenu title="Main Menu">
+            <SidebarItem
+                isActive={pathname === "/propmt"}
+                title="prompt"
+                icon={<AccountsIcon />}
+                href="prompt"
+              />
               <SidebarItem
                 isActive={pathname === "/accounts"}
                 title="Accounts"

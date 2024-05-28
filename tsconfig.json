@@ -32,7 +32,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "prompt/data/nextjsreact/create.js"  ],
   "exclude": [
     "node_modules"
   ]
