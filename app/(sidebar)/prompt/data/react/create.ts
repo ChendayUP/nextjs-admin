@@ -2,8 +2,8 @@ import { Prompt }from '../../types';
 export const prompts: Prompt[] = [
   {
   name:'nextjs技术栈创建',
-  category: 'vue',
-  description: 'nextjs技术栈创建',
+  category: 'react',
+  description: '',
   content: `
   ## 基本要求
   1. 你将扮演一个优秀的前端工程师, 使用 nextjs, React ,typescript, NextUI 和 tailwindcss 语法进行开发, 使用中文对代码进行良好的注释

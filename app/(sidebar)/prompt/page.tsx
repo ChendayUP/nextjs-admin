@@ -1,13 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { GetStaticPropsContext } from "next"
-import { Button, Card, CardHeader, CardBody } from "@nextui-org/react"
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  Listbox,
+  ListboxItem,
+  ListboxSection,
+} from "@nextui-org/react"
 import { FiCopy } from "react-icons/fi"
 // import Markdown from 'react-markdown';
 // import remarkGfm from 'remark-gfm';
-import { Prompt } from "@/prompt/types"
-import { getAllPrompts } from "@/prompt/init"
+import stringify from "remark-stringify"
+import {remark} from "remark"
+import { Prompt } from "./types"
+import { getAllPrompts } from "./data/init"
 
 // export async function generateMetadata() {
 //   return { title: '提示词列表' };
@@ -15,13 +25,24 @@ import { getAllPrompts } from "@/prompt/init"
 
 const Home: React.FC = () => {
   // 从指定文件夹中的 TypeScript 文件获取并合并初始提示词数据
-  const [prompts, setPrompts] = useState<Prompt[]>([])
+  const [prompts, setPrompts] = useState<{ [key: string]: Prompt[] }>()
   const getPrompts = async () => {
     const list = await getAllPrompts()
-    setPrompts(list)
+    let map: { [key: string]: Prompt[] } = {}
+
+    list.forEach((item) => {
+      if (map[item.category]) {
+        map[item.category]!.push(item)
+      } else {
+        map[item.category] = [item]
+      }
+    })
+
+    setPrompts(map)
   }
-  getPrompts()
-  console.log("prompts", prompts.map)
+  useEffect(() => {
+    getPrompts()
+  }, [])
   // 提示词数据状态
 
   // 选中的提示词状态
@@ -42,23 +63,40 @@ const Home: React.FC = () => {
     }
   }
 
+  const MarkdownContent = ({ content }: {content: string}) => {
+    const processedContent = remark()
+      .use(stringify)
+      .processSync(content)
+      .toString()
+
+    return (
+      <pre>
+        <code>{processedContent}</code>
+      </pre>
+    )
+  }
+
   return (
     <div className="min-h-screen flex">
       {/* 左侧提示词列表 */}
       <div className="w-1/3 border-r border-gray-300 p-4 overflow-y-auto">
-        {prompts.map((prompt, index) => (
-          <Card
-            key={index}
-            className="mb-4 cursor-pointer"
-            onClick={() => handlePromptSelect(prompt)}
-          >
-            <CardHeader>{prompt.category}</CardHeader>
-            <CardBody>
-              <p>{prompt.name}</p>
-              <p>{prompt.description}</p>
-            </CardBody>
-          </Card>
-        ))}
+        {prompts && (
+          <Listbox variant="flat" aria-label="Listbox menu with sections">
+            {Object.entries(prompts).map(([category, prompts], index) => (
+              <ListboxSection key={index} title={category} showDivider>
+                {prompts.map((prompt, idx) => (
+                  <ListboxItem
+                    key={idx}
+                    description={prompt.description}
+                    onClick={() => handlePromptSelect(prompt)}
+                  >
+                    {prompt.name}
+                  </ListboxItem>
+                ))}
+              </ListboxSection>
+            ))}
+          </Listbox>
+        )}
       </div>
 
       {/* 右侧提示词内容显示 */}
@@ -68,9 +106,10 @@ const Home: React.FC = () => {
             {selectedPrompt.association.map((item, idx) => (
               <Card key={idx} className="mb-4">
                 <CardBody>
-                  {/* <Markdown remarkPlugins={[remarkGfm]}> */}
-                  {item === -1 ? selectedPrompt.content : (item as string)}
-                  {/* </Markdown> */}
+                  {/* <Markdown remarkPlugins={[remarkGfm]}>
+                    {item === -1 ? selectedPrompt.content : (item as string)}
+                  </Markdown> */}
+                  <MarkdownContent content={item === -1 ? selectedPrompt.content : (item as string)} />
                 </CardBody>
               </Card>
             ))}
