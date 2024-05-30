@@ -2,15 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { GetStaticPropsContext } from "next"
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  Listbox,
-  ListboxItem,
-  ListboxSection,
-} from "@nextui-org/react"
+import { Button, Listbox, ListboxItem, ListboxSection } from "@nextui-org/react"
 import { FiCopy } from "react-icons/fi"
 import { DiAndroid } from "react-icons/di"
 // import Markdown from 'react-markdown';
@@ -29,6 +21,17 @@ const Home: React.FC = () => {
   // 从指定文件夹中的 TypeScript 文件获取并合并初始提示词数据
   const [prompts, setPrompts] = useState<languagePromptList>()
   const [association, setAssociation] = useState<PromptAssociation>({})
+  const [openCategories, setOpenCategories] = useState<{
+    [key: string]: boolean
+  }>({})
+
+  const handleToggleCategory = (category: string) => {
+    setOpenCategories((prevCategories) => ({
+      ...prevCategories,
+      [category]: !prevCategories[category],
+    }))
+  }
+
   const getPrompts = async () => {
     const [languageList, promptAssociation] = await getAllPrompts()
     setAssociation(promptAssociation)
@@ -125,34 +128,46 @@ const Home: React.FC = () => {
       <div className="w-[300px] border-r border-gray-300 p-4 overflow-y-auto">
         {prompts &&
           Object.entries(prompts).map(([language, promptsList], index) => (
-            <>
+            <div key={index} className="mb-4">
               <div className="bg-blue-500 text-white rounded-lg px-2 py-2">
                 {language}
               </div>
-              <Listbox variant="flat">
+              <div className="mt-2">
                 {Object.entries(promptsList).map(
                   ([category, prompts], index) => (
-                    <ListboxSection key={index} title={category} showDivider>
-                      {prompts.map((prompt, idx) => (
-                        <ListboxItem
-                          key={prompt.name}
-                          description={prompt.description}
-                          startContent={<DiAndroid />}
-                          className={
-                            prompt.name === selectedPrompt?.name
-                              ? "bg-gray-200"
-                              : ""
-                          }
-                          onClick={() => handlePromptSelect(prompt)}
-                        >
-                          {prompt.name}
-                        </ListboxItem>
-                      ))}
-                    </ListboxSection>
+                    <div key={index} className="mb-2">
+                      <div
+                        className="font-bold mb-1 flex justify-between items-center cursor-pointer"
+                        onClick={() => handleToggleCategory(category)}
+                      >
+                        <span>{category}</span>
+                        <span className="text-xl">
+                          {openCategories[category] ? "-" : "+"}
+                        </span>
+                      </div>
+                      {openCategories[category] && (
+                        <div className="ml-2">
+                          {prompts.map((prompt, idx) => (
+                            <div
+                              key={prompt.name}
+                              className={`py-1 px-2 rounded cursor-pointer flex items-center ${
+                                prompt.name === selectedPrompt?.name
+                                  ? "bg-gray-200"
+                                  : ""
+                              }`}
+                              onClick={() => handlePromptSelect(prompt)}
+                            >
+                              <DiAndroid className="mr-2" />
+                              {prompt.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )
                 )}
-              </Listbox>
-            </>
+              </div>
+            </div>
           ))}
       </div>
 
@@ -160,17 +175,6 @@ const Home: React.FC = () => {
       <div className="flex-1 p-4">
         {selectedPrompt ? (
           <div>
-            {/* {selectedPrompt.association.map((item, idx) => (
-              <MarkdownContent
-                content={
-                  item === -1
-                    ? selectedPrompt.content
-                    : association[item]
-                    ? association[item].content
-                    : `没有内容: ${item}`
-                }
-              />
-            ))} */}
             <ShowContent />
             <Button onClick={handleCopyToClipboard} startContent={<FiCopy />}>
               复制
