@@ -6,3 +6,11 @@ export interface Prompt {
   content: string;
   association: (string | number)[];
 }
+
+export interface PromptLanguage {
+  [key: string]: Prompt[];
+}
+
+export interface PromptAssociation {
+  [key: string]: Prompt;
+}

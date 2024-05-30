@@ -1,7 +1,7 @@
 import { Prompt } from "../../types"
 export const prompts: Prompt[] = [
   {
-    name: "页面创建",
+    name: "Vue3页面创建",
     category: "Vue3-页面",
     description: "",
     content: `

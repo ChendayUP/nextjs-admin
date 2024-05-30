@@ -1,7 +1,7 @@
 import { Prompt } from "../../types"
 export const prompts: Prompt[] = [
   {
-    name: "输入框组件, 自定义下拉弹出内容",
+    name: "Vue3输入框组件, 自定义下拉弹出内容",
     category: "Vue3-组件",
     description: "",
     content: `

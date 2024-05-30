@@ -12,30 +12,39 @@ import {
   ListboxSection,
 } from "@nextui-org/react"
 import { FiCopy } from "react-icons/fi"
+import { DiAndroid } from "react-icons/di"
 // import Markdown from 'react-markdown';
 // import remarkGfm from 'remark-gfm';
 import stringify from "remark-stringify"
-import {remark} from "remark"
-import { Prompt } from "./types"
+import { remark } from "remark"
+import { Prompt, PromptAssociation } from "./types"
 import { getAllPrompts } from "./data/init"
 
 // export async function generateMetadata() {
 //   return { title: '提示词列表' };
 // }
+type languagePromptList = { [key: string]: { [key: string]: Prompt[] } }
 
 const Home: React.FC = () => {
   // 从指定文件夹中的 TypeScript 文件获取并合并初始提示词数据
-  const [prompts, setPrompts] = useState<{ [key: string]: Prompt[] }>()
+  const [prompts, setPrompts] = useState<languagePromptList>()
+  const [association, setAssociation] = useState<PromptAssociation>({})
   const getPrompts = async () => {
-    const list = await getAllPrompts()
-    let map: { [key: string]: Prompt[] } = {}
+    const [languageList, promptAssociation] = await getAllPrompts()
+    setAssociation(promptAssociation)
+    let map: languagePromptList = {}
 
-    list.forEach((item) => {
-      if (map[item.category]) {
-        map[item.category]!.push(item)
-      } else {
-        map[item.category] = [item]
-      }
+    Object.keys(languageList).forEach((key) => {
+      let list = languageList[key]
+      let subMap: { [key: string]: Prompt[] } = {}
+      list.forEach((item) => {
+        if (subMap[item.category]) {
+          subMap[item.category]!.push(item)
+        } else {
+          subMap[item.category] = [item]
+        }
+      })
+      map[key] = subMap
     })
 
     setPrompts(map)
@@ -47,6 +56,7 @@ const Home: React.FC = () => {
 
   // 选中的提示词状态
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null)
+  const [selected, setSelected] = useState<string>("")
 
   // 处理提示词选择事件
   const handlePromptSelect = (prompt: Prompt) => {
@@ -55,64 +65,113 @@ const Home: React.FC = () => {
 
   // 将提示词内容复制到剪切板
   const handleCopyToClipboard = () => {
-    if (selectedPrompt) {
-      const finalContent = selectedPrompt.association
-        .map((item) => (item === -1 ? selectedPrompt.content : item))
-        .join("\n")
-      navigator.clipboard.writeText(finalContent)
+    if (selected) {
+      navigator.clipboard.writeText(selected)
     }
   }
 
-  const MarkdownContent = ({ content }: {content: string}) => {
-    const processedContent = remark()
-      .use(stringify)
-      .processSync(content)
-      .toString()
+  const MarkdownContent = ({
+    content,
+    titleColor = "#000",
+  }: {
+    content: string
+    titleColor?: string
+  }) => {
+    // 将内容按行分割成数组
+    const lines = content.split("\n")
 
+    // 遍历每一行,如果是标题(以#开头),则将其包裹在span标签中,并应用指定的颜色
+    const processedLines = lines.map((line, index) => {
+      if (line.startsWith("#")) {
+        const level = line.split(" ")[0].length // 获取标题级别
+        const title = line.slice(level + 1) // 获取标题内容
+        return (
+          <span key={index} style={{ color: titleColor, fontWeight: "bold" }}>
+            {line} <br />
+          </span>
+        )
+      }
+      return `${line}\n`
+    })
+    console.log("processedLines", processedLines)
     return (
-      <pre>
-        <code>{processedContent}</code>
+      <pre className="">
+        <code>{processedLines}</code>
       </pre>
     )
+  }
+
+  const ShowContent = () => {
+    const str = selectedPrompt!.association
+      .map((item, idx) => {
+        let row =
+          item === -1
+            ? selectedPrompt!.content
+            : association[item]
+            ? association[item].content
+            : `没有内容: ${item}`
+        // 删除row末尾换行符
+        row = row.trim()
+        return row
+      })
+      .join("\n")
+    setSelected(str)
+    return <MarkdownContent content={str} titleColor="#ff0000" />
   }
 
   return (
     <div className="min-h-screen flex">
       {/* 左侧提示词列表 */}
-      <div className="w-1/3 border-r border-gray-300 p-4 overflow-y-auto">
-        {prompts && (
-          <Listbox variant="flat" aria-label="Listbox menu with sections">
-            {Object.entries(prompts).map(([category, prompts], index) => (
-              <ListboxSection key={index} title={category} showDivider>
-                {prompts.map((prompt, idx) => (
-                  <ListboxItem
-                    key={idx}
-                    description={prompt.description}
-                    onClick={() => handlePromptSelect(prompt)}
-                  >
-                    {prompt.name}
-                  </ListboxItem>
-                ))}
-              </ListboxSection>
-            ))}
-          </Listbox>
-        )}
+      <div className="w-[300px] border-r border-gray-300 p-4 overflow-y-auto">
+        {prompts &&
+          Object.entries(prompts).map(([language, promptsList], index) => (
+            <>
+              <div className="bg-blue-500 text-white rounded-lg px-2 py-2">
+                {language}
+              </div>
+              <Listbox variant="flat">
+                {Object.entries(promptsList).map(
+                  ([category, prompts], index) => (
+                    <ListboxSection key={index} title={category} showDivider>
+                      {prompts.map((prompt, idx) => (
+                        <ListboxItem
+                          key={prompt.name}
+                          description={prompt.description}
+                          startContent={<DiAndroid />}
+                          className={
+                            prompt.name === selectedPrompt?.name
+                              ? "bg-gray-200"
+                              : ""
+                          }
+                          onClick={() => handlePromptSelect(prompt)}
+                        >
+                          {prompt.name}
+                        </ListboxItem>
+                      ))}
+                    </ListboxSection>
+                  )
+                )}
+              </Listbox>
+            </>
+          ))}
       </div>
 
       {/* 右侧提示词内容显示 */}
-      <div className="w-2/3 p-4">
+      <div className="flex-1 p-4">
         {selectedPrompt ? (
           <div>
-            {selectedPrompt.association.map((item, idx) => (
-              <Card key={idx} className="mb-4">
-                <CardBody>
-                  {/* <Markdown remarkPlugins={[remarkGfm]}>
-                    {item === -1 ? selectedPrompt.content : (item as string)}
-                  </Markdown> */}
-                  <MarkdownContent content={item === -1 ? selectedPrompt.content : (item as string)} />
-                </CardBody>
-              </Card>
-            ))}
+            {/* {selectedPrompt.association.map((item, idx) => (
+              <MarkdownContent
+                content={
+                  item === -1
+                    ? selectedPrompt.content
+                    : association[item]
+                    ? association[item].content
+                    : `没有内容: ${item}`
+                }
+              />
+            ))} */}
+            <ShowContent />
             <Button onClick={handleCopyToClipboard} startContent={<FiCopy />}>
               复制
             </Button>
